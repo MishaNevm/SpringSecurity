@@ -26,7 +26,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
                 .csrf()
                 .disable()
                 .authorizeRequests()
-                .antMatchers("/auth/login","/error")
+                .antMatchers("/auth/login","/auth/registration","/error")
                 .permitAll()
                 .anyRequest()
                 .authenticated()
@@ -37,6 +37,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
                 .defaultSuccessUrl("/hello", true)
                 .failureUrl("/auth/login?error");
     }
+
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
