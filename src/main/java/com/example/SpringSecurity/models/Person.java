@@ -1,6 +1,9 @@
 package com.example.SpringSecurity.models;
 
 import javax.persistence.*;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Pattern;
 
 @Entity
 @Table(name = "Person")
@@ -11,15 +14,19 @@ public class Person {
     private int id;
 
     @Column(name = "name")
+    @NotEmpty(message = "name should be not empty")
     private String name;
 
     @Column(name = "password")
+    @NotEmpty(message = "password should be not empty")
     private String password;
 
     @Column(name = "year_of_birth")
+    @Min(value = 1900, message = "Year of birth should be bigger than 1900")
     private int yearOfBirth;
 
     @Column(name = "role")
+    @Pattern(regexp = "ROLE_(ADMIN|USER)", message = "Role should be or ROLE_ADMIN, or ROLE_USER")
     private String role;
 
     public int getId() {
