@@ -1,11 +1,13 @@
 package com.example.SpringSecurity.controllers;
 
 
+import com.example.SpringSecurity.DTO.PersonDTO;
 import com.example.SpringSecurity.models.Person;
 import com.example.SpringSecurity.sevices.PersonService;
 import com.example.SpringSecurity.util.PersonErrorResponse;
 import com.example.SpringSecurity.util.PersonNotCreatedException;
 import com.example.SpringSecurity.util.PersonNotFoundException;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,23 +23,25 @@ import java.util.List;
 public class RestController {
 
     private final PersonService personService;
+    private final ModelMapper modelMapper;
 
     @Autowired
-    public RestController(PersonService personService) {
+    public RestController(PersonService personService, ModelMapper modelMapper) {
         this.personService = personService;
+        this.modelMapper = modelMapper;
     }
 
     @GetMapping
-    public List<Person> getAllPersons() {
-        return personService.findAll();
+    public List<PersonDTO> getAllPersons() {
+        return personService.findAll().stream().map(this::convertToPersonDTO).toList();
     }
     @GetMapping("/{id}")
-    public Person findOne (@PathVariable("id") int id) {
-        return personService.findOne(id);
+    public PersonDTO findOne (@PathVariable("id") int id) {
+        return convertToPersonDTO(personService.findOne(id));
     }
 
     @PostMapping()
-    public ResponseEntity<HttpStatus> create(@RequestBody @Valid Person person, BindingResult bindingResult){
+    public ResponseEntity<HttpStatus> create(@RequestBody @Valid PersonDTO personDTO, BindingResult bindingResult){
         if (bindingResult.hasErrors()) {
             StringBuilder errorMessage = new StringBuilder();
             List<FieldError> errors = bindingResult.getFieldErrors();
@@ -47,7 +51,7 @@ public class RestController {
             }
             throw new PersonNotCreatedException(errorMessage.toString());
         }
-        personService.save(person);
+        personService.save(convertToPerson(personDTO));
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
@@ -66,5 +70,13 @@ public class RestController {
                 System.currentTimeMillis()
         );
         return new ResponseEntity<>(personErrorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    private Person convertToPerson(PersonDTO personDTO) {
+        return modelMapper.map(personDTO, Person.class);
+    }
+
+    private PersonDTO convertToPersonDTO (Person person) {
+        return modelMapper.map(person, PersonDTO.class);
     }
 }
